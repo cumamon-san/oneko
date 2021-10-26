@@ -8,6 +8,8 @@ static char rcsid[] = "$Header: /home/sun/unix/kato/xsam/oneko/oneko.c,v 1.5 90/
 
 #include "oneko.h"
 #include "patchlevel.h"
+#include "X11/Xatom.h"
+
 /*
  *	グローバル変数
  */
@@ -965,6 +967,23 @@ IsNekoMoveStart()
 }
 
 
+Bool
+IsDesktopWindow(Display *display, Window window)
+{
+    Atom da;
+    int di;
+    unsigned long dl;
+    unsigned char *prop_ret = NULL;
+
+    Atom prop_type    = XInternAtom(display, "_NET_WM_WINDOW_TYPE", True);
+    Atom prop_desktop = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DESKTOP", True);
+
+    int status = XGetWindowProperty(display, window, prop_type, 0L, sizeof(Atom), False,
+                                    XA_ATOM, &da, &di, &dl, &dl, &prop_ret);
+
+    return(status == Success && prop_ret && *((Atom *)prop_ret) == prop_desktop);
+}
+
 /*
  *	猫移動 dx, dy 計算
  */
@@ -998,7 +1017,8 @@ CalcDxDy()
       XGetInputFocus(theDisplay, &theTarget, &revert);
 
       if (theTarget != theRoot
-	  && theTarget != PointerRoot && theTarget != None) {
+      && theTarget != PointerRoot && theTarget != None
+      && !IsDesktopWindow(theDisplay, theTarget)) {
 	Window		QueryParent, *QueryChildren;
 	unsigned int	nchild;
 
