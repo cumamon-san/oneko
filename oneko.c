@@ -984,6 +984,15 @@ IsDesktopWindow(Display *display, Window window)
     return(status == Success && prop_ret && *((Atom *)prop_ret) == prop_desktop);
 }
 
+
+Bool MouseInControlZone(XWindowAttributes *WinAttr, int BorderX)
+{
+    return MouseX >= WinAttr->x + WinAttr->width - BorderX &&
+           MouseX <= WinAttr->x + WinAttr->width &&
+           MouseY >= WinAttr->y &&
+           MouseY <= WinAttr->y + 2 * BITMAP_HEIGHT;
+}
+
 /*
  *	猫移動 dx, dy 計算
  */
@@ -1060,15 +1069,19 @@ CalcDxDy()
 	if (ToFocus) {
 	  if (MouseX < theTargetAttributes.x+BITMAP_WIDTH/2)
 	    LargeX = (double)(theTargetAttributes.x + XOffset - NekoX);
-	  else if (MouseX > theTargetAttributes.x+theTargetAttributes.width
-		   -BITMAP_WIDTH/2)
+      else if (MouseX > theTargetAttributes.x+theTargetAttributes.width -BITMAP_WIDTH/2)
 	    LargeX = (double)(theTargetAttributes.x + theTargetAttributes.width
 			      + XOffset - NekoX - BITMAP_WIDTH);
 	  else 
 	    LargeX = (double)(MouseX - NekoX - BITMAP_WIDTH / 2);
 
-	  LargeY = (double)(theTargetAttributes.y
-			    + YOffset - NekoY - BITMAP_HEIGHT);
+      LargeY = (double)(theTargetAttributes.y + YOffset - NekoY - BITMAP_HEIGHT);
+
+      int BorderX = 4 * BITMAP_WIDTH;
+      if(NekoY >= theTargetAttributes.y && theTargetAttributes.width > BorderX
+         && MouseInControlZone(&theTargetAttributes, BorderX)) {
+        LargeX = theTargetAttributes.x + theTargetAttributes.width - BorderX - NekoX;
+      }
 	}
 	else {
 	  MouseX = theTargetAttributes.x 
