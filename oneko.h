@@ -92,7 +92,7 @@
 #define	NEKO_JARE_TIME		10
 #define	NEKO_KAKI_TIME		4
 #define	NEKO_AKUBI_TIME		6	/* もともと３だったけど長い方がいい */
-#define	NEKO_AWAKE_TIME		3
+#define	NEKO_AWAKE_TIME		1
 #define	NEKO_TOGI_TIME		10
 
 #define	PI_PER8			((double)3.1415926535/(double)8)

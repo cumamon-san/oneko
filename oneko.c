@@ -985,17 +985,22 @@ IsDesktopWindow(Display *display, Window window)
 }
 
 
-Bool MouseInControlZone(XWindowAttributes *WinAttr, int BorderX)
+Bool
+MouseInControlZone(XWindowAttributes *WinAttr)
 {
-    return MouseX >= WinAttr->x + WinAttr->width - BorderX &&
-           MouseX <= WinAttr->x + WinAttr->width &&
-           MouseY >= WinAttr->y &&
-           MouseY <= WinAttr->y + 2 * BITMAP_HEIGHT;
+    return MouseX >= WinAttr->x && MouseX <= WinAttr->x + WinAttr->width &&
+           MouseY >= WinAttr->y && MouseY <= WinAttr->y + 1.5 * BITMAP_HEIGHT;
 }
 
 /*
  *	猫移動 dx, dy 計算
  */
+
+double
+MoveToCursor()
+{
+    return MouseX - BITMAP_WIDTH / 2 - NekoX;
+}
 
 void
 CalcDxDy()
@@ -1077,10 +1082,21 @@ CalcDxDy()
 
       LargeY = (double)(theTargetAttributes.y + YOffset - NekoY - BITMAP_HEIGHT);
 
-      int BorderX = 4 * BITMAP_WIDTH;
-      if(NekoY >= theTargetAttributes.y && theTargetAttributes.width > BorderX
-         && MouseInControlZone(&theTargetAttributes, BorderX)) {
-        LargeX = theTargetAttributes.x + theTargetAttributes.width - BorderX - NekoX;
+      int BorderX = 2 * BITMAP_WIDTH;
+      if(NekoY >= theTargetAttributes.y - BITMAP_HEIGHT / 2 && theTargetAttributes.width > BorderX && MouseInControlZone(&theTargetAttributes)) {
+        LargeX = MoveToCursor();
+        if(NekoX <= MouseX) {
+              if(theTargetAttributes.x + BorderX + 0.2 * BITMAP_WIDTH <= MouseX)
+                  LargeX -= BorderX;
+              else
+                  LargeX += BorderX;
+          }
+          else {
+              if(MouseX <= theTargetAttributes.x + theTargetAttributes.width - BorderX - 0.2 * BITMAP_WIDTH)
+                  LargeX += BorderX;
+              else
+                  LargeX -= BorderX;
+          }
       }
 	}
 	else {
