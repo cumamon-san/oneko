@@ -966,7 +966,6 @@ IsNekoMoveStart()
     }
 }
 
-
 Bool
 IsDesktopWindow(Display *display, Window window)
 {
@@ -984,6 +983,16 @@ IsDesktopWindow(Display *display, Window window)
     return(status == Success && prop_ret && *((Atom *)prop_ret) == prop_desktop);
 }
 
+Bool
+InFullscreenMode(Display *display, Window window)
+{
+    Screen* screen = ScreenOfDisplay(display, DefaultScreen(display));
+
+    XWindowAttributes win_attr;
+    XGetWindowAttributes(theDisplay, window, &win_attr);
+
+    return WidthOfScreen(screen) == win_attr.width && HeightOfScreen(screen) == win_attr.height;
+}
 
 Bool
 MouseInControlZone(XWindowAttributes *WinAttr)
@@ -1029,6 +1038,14 @@ CalcDxDy()
       int		revert;
 
       XGetInputFocus(theDisplay, &theTarget, &revert);
+
+      if(InFullscreenMode(theDisplay, theTarget)) {
+          XUnmapWindow(theDisplay, theWindow);
+          return;
+      }
+      else {
+          XMapWindow(theDisplay, theWindow);
+      }
 
       if (theTarget != theRoot
       && theTarget != PointerRoot && theTarget != None
